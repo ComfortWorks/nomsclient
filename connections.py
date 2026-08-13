@@ -4,7 +4,35 @@ import re
 import time
 import hashlib
 import sys
-from secrets import getSecret
+
+if sys.stdin and sys.stdin.isatty():
+	pass
+else:
+	from google.cloud import secretmanager
+from google.cloud import secretmanager
+
+import os
+
+
+def loadSecret(secret):
+    GCP_PROJECT_ID = None
+    #GCP_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", None)
+    if not GCP_PROJECT_ID:
+        try:
+            GCP_PROJECT_ID = requests.get("http://metadata.google.internal/computeMetadata/v1/project/project-id").text
+        except:
+            GCP_PROJECT_ID = "cw-webshop"
+    name = f"projects/{GCP_PROJECT_ID}/secrets/{secret}/versions/latest"
+    client = secretmanager.SecretManagerServiceClient()
+    account = client.access_secret_version(request={"name":name}).payload.data.decode("UTF-8")
+    return account
+
+
+def getSecret(secretName):
+    try:
+	    return loadSecret(secretName)
+    except:
+        return None
 
 
 gqlEndpoint = "https://__store__.myshopify.com/admin/api/__version__/graphql.json"
@@ -25,11 +53,11 @@ TOKEN_GEN_TIME = time.time()
 def getToken(store, password = None):
     if not password:
         NOMSEC = {}
-        for item in secrets.getSecret("noms_secret").split("\n"):
+        noms_secrets = getSecret("noms_secret")
+        for item in noms_secrets.split("\n"):
             key, value = item.split("=")
             NOMSEC[key.strip()] = value.strip().replace('"', '').replace("'", "")
         password = NOMSEC.get("PASSWORD")
-        print(password)
     nonce = str(int(time.time()))
     localKey = hashlib.sha256((nonce + password).encode('utf-8')).hexdigest()
     token = json.loads(requests.get(f"https://nomshopify.comfort-works.com/token?store={store}.myshopify.com&nonce={nonce}&key={localKey}").content)["token"]
@@ -44,7 +72,6 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
     currentTime = time.time()
     if currentTime - TOKEN_GEN_TIME > 1800 or not headers["X-Shopify-Access-Token"]:
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
-        print(headers["X-Shopify-Access-Token"])
         TOKEN_GEN_TIME = currentTime
     gqlEP = gqlEndpoint.replace("__store__", shopifyStore).replace("__version__", gqlVersion)
     returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
@@ -56,8 +83,6 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
         time.sleep(5)
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
         returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
-        print("-----gql error")
-        print(returned.content)
     returned.close()
 
     return json.loads(returned.content)
@@ -74,6 +99,9 @@ if __name__ == "__main__":
             }
         }
     """
-    password = sys.argv[1]
+    password = None
+
+    if len(sys.argv) > 1:
+        password = sys.argv[1]
 
     print(gql(productsQuery, {}, password=password))
