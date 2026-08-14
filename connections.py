@@ -69,6 +69,7 @@ def getToken(store, password = None):
 
 def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "2026-07", password = None):
     global TOKEN_GEN_TIME
+    global headers
     currentTime = time.time()
     if currentTime - TOKEN_GEN_TIME > 1800 or not headers["X-Shopify-Access-Token"]:
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
