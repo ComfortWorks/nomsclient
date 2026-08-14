@@ -50,7 +50,7 @@ headers = {
 TOKEN_GEN_TIME = time.time()
 
 
-def getToken(store, password = None):
+def getToken(store = "comfortworkscovers", password = None):
     if not password:
         NOMSEC = {}
         noms_secrets = getSecret("noms_secret")

@@ -9,3 +9,11 @@ from nomsclient.connections import gql
 
 data = gql(query, variables)
 ```
+
+If you only want to grab the GQL access token:
+
+```
+from nomsclient.connections import getToken
+
+token = getToken()
+```
