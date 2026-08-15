@@ -4,6 +4,8 @@ import re
 import time
 import hashlib
 import sys
+import traceback
+
 
 if sys.stdin and sys.stdin.isatty():
 	pass
@@ -32,6 +34,7 @@ def getSecret(secretName):
     try:
         return loadSecret(secretName)
     except:
+	print(traceback.format_exc())
         return None
 
 
