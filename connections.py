@@ -16,18 +16,28 @@ from google.cloud import secretmanager
 import os
 
 
-def loadSecret(secret):
-    GCP_PROJECT_ID = None
-    #GCP_PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", None)
-    if not GCP_PROJECT_ID:
+def loadSecret(secret: str) -> str:
+    gcp_project_id = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT")
+
+    if not gcp_project_id:
         try:
-            GCP_PROJECT_ID = requests.get("http://metadata.google.internal/computeMetadata/v1/project/project-id").text
-        except:
-            GCP_PROJECT_ID = "17379492735"
-    name = f"projects/{GCP_PROJECT_ID}/secrets/{secret}/versions/latest"
+            resp = requests.get(
+                "http://metadata.google.internal/computeMetadata/v1/project/project-id",
+                headers={"Metadata-Flavor": "Google"},
+                timeout=2,
+            )
+            if resp.status_code == 200:
+                gcp_project_id = resp.text
+        except Exception:
+            pass
+
+    if not gcp_project_id:
+        gcp_project_id = "17379492735"
+
+    name = f"projects/{gcp_project_id}/secrets/{secret}/versions/latest"
     client = secretmanager.SecretManagerServiceClient()
-    account = client.access_secret_version(request={"name":name}).payload.data.decode("UTF-8")
-    return account
+    response = client.access_secret_version(request={"name": name})
+    return response.payload.data.decode("UTF-8")
 
 
 def getSecret(secretName):
