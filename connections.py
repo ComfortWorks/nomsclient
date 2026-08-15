@@ -34,7 +34,7 @@ def getSecret(secretName):
     try:
         return loadSecret(secretName)
     except:
-	print(traceback.format_exc())
+        print(traceback.format_exc())
         return None
 
 
