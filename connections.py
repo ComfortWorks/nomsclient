@@ -87,6 +87,7 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
     if currentTime - TOKEN_GEN_TIME > 1800 or not headers["X-Shopify-Access-Token"]:
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
         TOKEN_GEN_TIME = currentTime
+    print(headers["X-Shopify-Access-Token"])
     gqlEP = gqlEndpoint.replace("__store__", shopifyStore).replace("__version__", gqlVersion)
     returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
 	
@@ -98,6 +99,7 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
         returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
     returned.close()
+    print(returned)
 
     return json.loads(returned.content)
 
