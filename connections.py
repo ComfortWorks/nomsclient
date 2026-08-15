@@ -99,7 +99,7 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
         returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
     returned.close()
-    print(returned)
+    print(returned.content)
 
     return json.loads(returned.content)
 
