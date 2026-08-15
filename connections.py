@@ -30,7 +30,7 @@ def loadSecret(secret):
 
 def getSecret(secretName):
     try:
-	    return loadSecret(secretName)
+        return loadSecret(secretName)
     except:
         return None
 
