@@ -23,7 +23,7 @@ def loadSecret(secret):
         try:
             GCP_PROJECT_ID = requests.get("http://metadata.google.internal/computeMetadata/v1/project/project-id").text
         except:
-            GCP_PROJECT_ID = "cw-webshop"
+            GCP_PROJECT_ID = "17379492735"
     name = f"projects/{GCP_PROJECT_ID}/secrets/{secret}/versions/latest"
     client = secretmanager.SecretManagerServiceClient()
     account = client.access_secret_version(request={"name":name}).payload.data.decode("UTF-8")
