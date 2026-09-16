@@ -88,15 +88,24 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
         TOKEN_GEN_TIME = currentTime
     gqlEP = gqlEndpoint.replace("__store__", shopifyStore).replace("__version__", gqlVersion)
-    returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
+
+    returned = None
+    try:
+        returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
+    except:
+        print(traceback.format_exc())
 	
     retries = 3
-    while retries > 0 and (returned.status_code < 200 or returned.status_code > 299):
+    while not returned or (retries > 0 and (returned.status_code < 200 or returned.status_code > 299)):
         returned.close()
         retries = retries - 1
         time.sleep(5)
         headers["X-Shopify-Access-Token"] = getToken(shopifyStore, password)
-        returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
+        returned = None
+        try:
+            returned = requests.post(gqlEP, headers=headers, json={"query": query, "variables": variables}, timeout=360)
+        except:
+            print(traceback.format_exc())
     returned.close()
 
     return json.loads(returned.content)
