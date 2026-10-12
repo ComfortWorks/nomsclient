@@ -98,7 +98,7 @@ def gql(query, variables, shopifyStore = "comfortworkscovers", gqlVersion = "202
     retries = 10
     lastError = ''
     while not returned or (retries > 0 and (returned.status_code < 200 or returned.status_code > 299)):
-	if returned:
+        if returned:
             returned.close()
         retries = retries - 1
         time.sleep(30)
